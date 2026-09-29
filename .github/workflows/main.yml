@@ -44,3 +44,8 @@ jobs:
         node-version: ${{matrix.node-version}} 
     - name: Run Tests
       run: echo "Test läuft mit Node.js ${{matrix.node-version}} "
+    - name: Absichtlicher Fehler bei Node 16
+      if: matrix.node-version == 16
+      run: |
+        echo "Simulierter Fehler bei Node.js ${{matrix.node-version}}"
+        exit 1
