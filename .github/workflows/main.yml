@@ -44,3 +44,27 @@ jobs:
         node-version: ${{matrix.node-version}} 
     - name: Run Tests
       run: echo "Test läuft mit Node.js ${{matrix.node-version}} "
+
+  security-scan:
+    needs: test-matrix
+    name: Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run security scan
+        id: scan
+        continue-on-error: true 
+        run: |
+          echo "Suche nach möglichen Secrets im Code..."
+          if grep -rniE "password|secret|api[_-]?key" --exclude-dir=.git --exclude-dir=.github .; then
+            echo "Mögliche Secrets gefunden!"
+            exit 1
+          fi
+          echo "Keine Auffälligkeiten gefunden."
+
+      - name: Warnung ausgeben
+        if: steps.scan.outcome == 'failure'
+        run: echo "::warning title=Security Scan::Der Security Scan hat Probleme gefunden. Bitte Log prüfen."
